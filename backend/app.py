@@ -24,6 +24,10 @@ argparser.add_argument('-c', '--cli', dest='cli', action='store_true',
                        default=False, help='run without server GUI window')
 argparser.add_argument('-u', '--usbhack', dest='usbhack', action='store_true',
                        default=False, help='use usb reset hack (advanced)')
+argparser.add_argument('-f', '--fakeserial', dest='fakeserial', action='store_true',
+                       default=False, help='Pretend serial connected (for testing)')
+argparser.add_argument('-t', '--tmp', dest='tmp', action='store_true',
+                       default=False, help='Only write to tmp')
 args = argparser.parse_args()
 
 try:
@@ -39,7 +43,7 @@ print "DriveboardApp v" + conf['version']
 conf['usb_reset_hack'] = args.usbhack
 
 # start server in thread
-web.start(browser=(not args.nobrowser), debug=args.debug)
+web.start(browser=(not args.nobrowser), debug=args.debug, fakeserial=args.fakeserial, tmp=args.tmp)
 
 # main thread loop
 while 1:

@@ -24,6 +24,7 @@ __author__  = 'Stefan Hechenberger <stefan@nortd.com>'
 DEBUG = False
 bottle.BaseRequest.MEMFILE_MAX = 1024*1024*100 # max 100Mb files
 time_status_last = 0
+FAKE_SERIAL = False
 
 
 def checkuser(user, pw):
@@ -142,10 +143,14 @@ def confserial(port=None):
 @bottle.auth_basic(checkuser)
 def status():
     global time_status_last
+    global FAKE_SERIAL
     if not driveboard.connected() and (time.time()-time_status_last) > 6.0:
         driveboard.connect_withfind(verbose=False)
     time_status_last = time.time()
-    return json.dumps(driveboard.status())
+    status = driveboard.status()
+    if FAKE_SERIAL:
+        status['serial'] = True
+    return json.dumps(status)
 
 
 @bottle.route('/homing')
@@ -624,13 +629,15 @@ class Server(threading.Thread):
 S = Server()
 
 
-def start(browser=False, debug=False):
+def start(browser=False, debug=False, fakeserial=False, tmp=False):
     """ Start a bottle web server.
         Derived from WSGIRefServer.run()
         to have control over the main loop.
     """
     global DEBUG
     DEBUG = debug
+    global FAKE_SERIAL
+    FAKE_SERIAL = fakeserial
 
     class FixedHandler(wsgiref.simple_server.WSGIRequestHandler):
         def address_string(self): # Prevent reverse DNS lookups please.
@@ -650,6 +657,8 @@ def start(browser=False, debug=False):
     S.server.quiet = not debug
     if debug:
         bottle.debug(True)
+    if tmp:
+        conf['stordir'] = '/tmp'
     print "Internal storage root is: " + conf['rootdir']
     print "Persistent storage root is: " + conf['stordir']
     print "-----------------------------------------------------------------------------"
