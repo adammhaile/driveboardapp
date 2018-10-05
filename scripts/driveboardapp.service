@@ -4,7 +4,7 @@ After=multi-user.target
 
 [Service]
 Type=idle
-ExecStart=/usr/bin/sudo python /home/pi/driveboardapp/backend/app.py -n -c --tmp
+ExecStart=/usr/bin/sudo python /root/driveboardapp/backend/app.py -n -c --tmp
 ExecStop=/usr/bin/sudo kill $(pgrep -f 'app.py')
 
 [Install]
